@@ -12,7 +12,7 @@ SELECT *
 FROM sys.columns
 WHERE object_id = OBJECT_ID('dbo.products');
 
-
+-- ******************************************************************************************************
 -- QUESTION 1
 -- Create a table called "products_copy"
 
@@ -24,7 +24,7 @@ CREATE TABLE [dbo].[products_copy](
 	[Unit] [VARCHAR](255) NULL,
 	[Price] [MONEY] NULL)
 
-
+-- ******************************************************************************************************
 -- QUESTION 2
 -- Declare variables and create a cursor to select products with an even price
 DECLARE @ProductID INT, @ProductName VARCHAR(200), @SupplierID INT, @CategoryID INT,
@@ -45,8 +45,7 @@ DEALLOCATE BackUpOddNumbers
 -- For Verifying everything was stored into products_copy
 SELECT * FROM products_copy;
 
-
-
+-- ******************************************************************************************************
 -- QUESTION 3
 -- Write a function named LegalAge with a birth date as an input and returns a Boolean status if the person is in the legal age (+18) or not.
 
@@ -73,7 +72,7 @@ END
 
 SELECT EmployeeID,LastName, FirstName, Dbo.LegalAge(BirthDate) AS Legal FROM employees
 
-
+-- ******************************************************************************************************
 -- QUESTION 4
 -- Write a function to give SupplierID as an input and return the name of the supplier as an output on W3 database using CURSOR.
 CREATE FUNCTION SupplierName (@SupplierID INT)
@@ -91,3 +90,58 @@ RETURN @SupplierName
 END
 
 SELECT ProductID, ProductName, dbo.SupplierName(SupplierID) AS SupplierName FROM products;
+
+-- ******************************************************************************************************
+-- QUESTION 5
+-- Cursor to iterate through Products table and print ProductID, ProductName, and Price
+DECLARE @ProductID INT, @ProductName VARCHAR(50), @Price MONEY
+DECLARE  cur_products CURSOR 
+FOR  SELECT ProductID, ProductName, Price FROM Products
+OPEN cur_products
+FETCH NEXT FROM cur_products INTO @ProductID, @ProductName, @Price
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT (CONCAT(@ProductID,'-',@ProductName,'-',@Price))
+		FETCH NEXT FROM cur_products INTO @ProductID, @ProductName, @Price
+	END
+CLOSE cur_products --Close it
+DEALLOCATE cur_products -- Remove it form RAM
+
+
+-- ******************************************************************************************************
+-- QUESTION 6 
+-- Write a SQL query that prints the CustomerName and Country for all customers from Canada, using a cursor.
+DECLARE @CustomerName  VARCHAR(250), @Country VARCHAR(150)
+DECLARE cur_cust_canada CURSOR
+	FOR SELECT CustomerName , Country FROM customers WHERE  Country='Canada'
+OPEN cur_cust_canada
+FETCH NEXT FROM cur_cust_canada INTO @CustomerName, @Country
+
+WHILE @@FETCH_STATUS = 0
+	BEGIN 
+	PRINT(CONCAT(@CustomerName,' / ',@Country))
+	FETCH NEXT FROM cur_cust_canada INTO @CustomerName, @Country
+	END
+
+CLOSE cur_cust_canada
+DEALLOCATE cur_cust_canada
+
+
+
+-- Second approach
+
+DECLARE @CustomerName2  VARCHAR(250), @Country2 VARCHAR(150)
+DECLARE cur_cust_canada2 CURSOR
+	FOR SELECT CustomerName , Country FROM customers
+OPEN cur_cust_canada2
+FETCH NEXT FROM cur_cust_canada2 INTO @CustomerName2, @Country2
+WHILE @@FETCH_STATUS = 0
+	BEGIN 
+		IF @Country2 = 'Canada'
+		BEGIN 
+			PRINT(CONCAT(@CustomerName2,' / ',@Country2))
+		END
+		FETCH NEXT FROM cur_cust_canada2 INTO @CustomerName2, @Country2
+	END
+CLOSE cur_cust_canada2
+DEALLOCATE cur_cust_canada2
